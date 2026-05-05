@@ -1,51 +1,143 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>くじアプリ</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>順番くじ</title>
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
 <style>
+* { box-sizing: border-box; }
+
 body {
   margin: 0;
-  background: #f2b45c;
-  font-family: sans-serif;
+  min-height: 100vh;
+  background:
+    linear-gradient(45deg, rgba(255,255,255,.12) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(255,255,255,.12) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(255,255,255,.12) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(255,255,255,.12) 75%),
+    #f2b45c;
+  background-size: 18px 18px;
+  font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
   text-align: center;
 }
 
-.container {
-  padding: 20px;
-}
-
-.hidden {
+.screen {
   display: none;
+  width: min(92vw, 520px);
+  margin: 0 auto;
+  padding: 28px 14px;
 }
 
-/* ボタン */
-.btn {
-  width: 80%;
-  margin: 10px auto;
-  padding: 20px;
-  font-size: 22px;
-  border-radius: 12px;
-  background: #eee;
+.screen.active { display: block; }
+
+.title {
+  color: #fff;
+  font-size: 30px;
+  font-weight: 900;
+  text-shadow: 3px 4px 0 rgba(0,0,0,.25);
+  margin: 20px 0 30px;
+}
+
+.menu-btn, .normal-btn {
+  width: 100%;
   border: none;
+  border-radius: 28px;
+  background: linear-gradient(#f3eadf, #d3b895);
+  color: #e98755;
+  font-size: 34px;
+  font-weight: 900;
+  padding: 28px 10px;
+  margin: 18px 0;
+  text-shadow: 3px 4px 0 rgba(0,0,0,.22);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.65), 0 8px 8px rgba(0,0,0,.18);
 }
 
-/* 入力 */
+.setting-box {
+  background: rgba(255,255,255,.7);
+  border-radius: 22px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  font-size: 22px;
+  font-weight: 900;
+  color: #7a5a36;
+  margin-top: 16px;
+}
+
 input {
-  font-size: 20px;
-  padding: 8px;
-  margin: 5px;
-  width: 120px;
+  width: 160px;
+  font-size: 28px;
+  text-align: center;
+  border: none;
+  border-radius: 12px;
+  padding: 10px;
+  margin-top: 8px;
 }
 
-/* 結果 */
-.result {
-  font-size: 50px;
-  margin: 20px;
-  color: #ff6a3d;
+.result-panel {
+  height: 190px;
+  background: #eee8dc;
+  border: 8px solid rgba(255,255,255,.85);
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 2px rgba(80,70,55,.25), 0 8px 8px rgba(0,0,0,.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 74px;
+}
+
+.result-text {
+  font-size: 72px;
+  font-weight: 900;
+  color: #ff8c55;
+  letter-spacing: .04em;
+  text-shadow: 5px 6px 0 rgba(0,0,0,.28);
+  line-height: 1;
+}
+
+.count {
+  color: #fff;
+  font-size: 60px;
+  font-weight: 900;
+  text-shadow:
+    4px 5px 0 rgba(0,0,0,.28),
+    -1px -1px 0 rgba(80,80,80,.55),
+    1px -1px 0 rgba(80,80,80,.55),
+    -1px 1px 0 rgba(80,80,80,.55),
+    1px 1px 0 rgba(80,80,80,.55);
+  margin-bottom: 72px;
+  white-space: nowrap;
+}
+
+.count small {
+  font-size: 32px;
+  margin-left: 8px;
+}
+
+.bottom-btn {
+  width: 100%;
+  height: 140px;
+  border: none;
+  border-radius: 30px;
+  background: linear-gradient(#f3eadf, #d3b895);
+  color: #e98755;
+  font-size: 64px;
+  font-weight: 900;
+  text-shadow: 4px 5px 0 rgba(0,0,0,.24);
+  box-shadow: inset 0 2px 0 rgba(255,255,255,.65), 0 8px 8px rgba(0,0,0,.18);
+}
+
+.back {
+  margin-top: 22px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 18px;
   font-weight: bold;
 }
 </style>
@@ -53,99 +145,97 @@ input {
 
 <body>
 
-<div class="container">
+<!-- 1画面目：メニュー -->
+<section id="menu" class="screen active">
+  <div class="title">モード選択</div>
+  <button class="menu-btn" onclick="goSetting('lottery')">当たり/はずれ</button>
+  <button class="menu-btn" onclick="goSetting('number')">番号割り振り</button>
+</section>
 
-  <!-- メニュー -->
-  <div id="menu">
-    <h2>モード選択</h2>
-    <button class="btn" onclick="show('lottery')">当たり/はずれ</button>
-    <button class="btn" onclick="show('number')">番号割り振り</button>
+<!-- 2画面目：設定 -->
+<section id="setting" class="screen">
+  <div class="title" id="settingTitle">設定</div>
+
+  <div class="setting-box">
+    <label>母数</label>
+    <input id="totalInput" type="number" value="525" min="1">
+
+    <div id="winSetting">
+      <label>当たり人数</label>
+      <input id="winInput" type="number" value="100" min="1">
+    </div>
   </div>
 
-  <!-- 当たり/はずれ -->
-  <div id="lottery" class="hidden">
-    <h2>当たり/はずれ</h2>
+  <button class="normal-btn" onclick="executeDraw()">抽選開始</button>
+  <button class="back" onclick="showScreen('menu')">戻る</button>
+</section>
 
-    <div>
-      母数<br>
-      <input id="total1" type="number" value="525">
-    </div>
-
-    <div>
-      当たり人数<br>
-      <input id="winCount" type="number" value="100">
-    </div>
-
-    <button class="btn" onclick="drawLottery()">抽選</button>
-
-    <div id="lotteryResult" class="result">？</div>
-
-    <button onclick="back()">戻る</button>
+<!-- 3画面目：結果 -->
+<section id="resultScreen" class="screen">
+  <div class="result-panel">
+    <div id="resultText" class="result-text">？？？</div>
   </div>
 
-  <!-- 番号割り振り -->
-  <div id="number" class="hidden">
-    <h2>番号割り振り</h2>
+  <div class="count">/<span id="totalText">525</span><small>人中</small></div>
 
-    <div>
-      母数<br>
-      <input id="total2" type="number" value="525">
-    </div>
-
-    <button class="btn" onclick="drawNumber()">番号取得</button>
-
-    <div id="numberResult" class="result">？</div>
-
-    <button onclick="back()">戻る</button>
-  </div>
-
-</div>
+  <button class="bottom-btn" onclick="showScreen('menu')">あなたは？</button>
+</section>
 
 <script>
 const LIFF_ID = "YOUR_LIFF_ID";
+let currentMode = "lottery";
 
-/* 画面切替 */
-function show(mode) {
-  document.getElementById("menu").classList.add("hidden");
-  document.getElementById(mode).classList.remove("hidden");
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+  document.getElementById(id).classList.add("active");
 }
 
-function back() {
-  document.getElementById("menu").classList.remove("hidden");
-  document.getElementById("lottery").classList.add("hidden");
-  document.getElementById("number").classList.add("hidden");
+function goSetting(mode) {
+  currentMode = mode;
+
+  document.getElementById("settingTitle").textContent =
+    mode === "lottery" ? "当たり/はずれ設定" : "番号割り振り設定";
+
+  document.getElementById("winSetting").style.display =
+    mode === "lottery" ? "block" : "none";
+
+  showScreen("setting");
 }
 
-/* 抽選 */
-function drawLottery() {
-  const total = Number(document.getElementById("total1").value);
-  const win = Number(document.getElementById("winCount").value);
+function executeDraw() {
+  const total = Number(document.getElementById("totalInput").value);
+  const win = Number(document.getElementById("winInput").value);
 
-  const rand = Math.floor(Math.random() * total);
-
-  if (rand < win) {
-    document.getElementById("lotteryResult").innerText = "当たり";
-  } else {
-    document.getElementById("lotteryResult").innerText = "はずれ";
+  if (!total || total < 1) {
+    alert("母数を1以上で入力してください");
+    return;
   }
+
+  if (currentMode === "lottery") {
+    if (!win || win < 1 || win > total) {
+      alert("当たり人数は1以上、母数以下で入力してください");
+      return;
+    }
+
+    const result = Math.floor(Math.random() * total) < win ? "当たり" : "はずれ";
+    document.getElementById("resultText").textContent = result;
+  }
+
+  if (currentMode === "number") {
+    const number = Math.floor(Math.random() * total) + 1;
+    document.getElementById("resultText").textContent = number;
+  }
+
+  document.getElementById("totalText").textContent = total;
+  showScreen("resultScreen");
 }
 
-/* 番号割り振り */
-function drawNumber() {
-  const total = Number(document.getElementById("total2").value);
-
-  const num = Math.floor(Math.random() * total) + 1;
-
-  document.getElementById("numberResult").innerText = num + "番";
-}
-
-/* LIFF */
 async function initLiff() {
   try {
     await liff.init({ liffId: LIFF_ID });
     if (!liff.isLoggedIn()) liff.login();
   } catch (e) {
-    console.log(e);
+    console.log("LIFF init error:", e);
   }
 }
 
