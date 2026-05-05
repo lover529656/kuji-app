@@ -13,10 +13,10 @@ body {
   margin: 0;
   min-height: 100vh;
   background:
-    linear-gradient(45deg, rgba(255,255,255,.12) 25%, transparent 25%),
-    linear-gradient(-45deg, rgba(255,255,255,.12) 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, rgba(255,255,255,.12) 75%),
-    linear-gradient(-45deg, transparent 75%, rgba(255,255,255,.12) 75%),
+    linear-gradient(45deg, rgba(255,255,255,.13) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(255,255,255,.13) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(255,255,255,.13) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(255,255,255,.13) 75%),
     #f2b45c;
   background-size: 18px 18px;
   font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
@@ -37,16 +37,16 @@ body {
   font-size: 30px;
   font-weight: 900;
   text-shadow: 3px 4px 0 rgba(0,0,0,.25);
-  margin: 20px 0 30px;
+  margin: 28px 0;
 }
 
 .menu-btn, .normal-btn {
   width: 100%;
   border: none;
-  border-radius: 28px;
+  border-radius: 30px;
   background: linear-gradient(#f3eadf, #d3b895);
   color: #e98755;
-  font-size: 34px;
+  font-size: 32px;
   font-weight: 900;
   padding: 28px 10px;
   margin: 18px 0;
@@ -55,8 +55,8 @@ body {
 }
 
 .setting-box {
-  background: rgba(255,255,255,.7);
-  border-radius: 22px;
+  background: rgba(255,255,255,.72);
+  border-radius: 24px;
   padding: 24px;
   margin-bottom: 20px;
 }
@@ -66,23 +66,33 @@ label {
   font-size: 22px;
   font-weight: 900;
   color: #7a5a36;
-  margin-top: 16px;
+  margin-top: 18px;
 }
 
 input {
-  width: 160px;
-  font-size: 28px;
+  width: 180px;
+  font-size: 30px;
   text-align: center;
   border: none;
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 10px;
   margin-top: 8px;
 }
 
+.back {
+  margin-top: 18px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* 3画面目：結果UI */
 .result-panel {
   height: 190px;
   background: #eee8dc;
-  border: 8px solid rgba(255,255,255,.85);
+  border: 8px solid rgba(255,255,255,.88);
   border-radius: 8px;
   box-shadow: inset 0 0 0 2px rgba(80,70,55,.25), 0 8px 8px rgba(0,0,0,.25);
   display: flex;
@@ -92,12 +102,16 @@ input {
 }
 
 .result-text {
-  font-size: 72px;
+  font-size: 74px;
   font-weight: 900;
   color: #ff8c55;
   letter-spacing: .04em;
   text-shadow: 5px 6px 0 rgba(0,0,0,.28);
   line-height: 1;
+}
+
+.result-text.number {
+  font-size: 92px;
 }
 
 .count {
@@ -132,27 +146,23 @@ input {
   box-shadow: inset 0 2px 0 rgba(255,255,255,.65), 0 8px 8px rgba(0,0,0,.18);
 }
 
-.back {
-  margin-top: 22px;
-  background: transparent;
-  border: none;
+.note {
   color: #fff;
-  font-size: 18px;
-  font-weight: bold;
+  font-size: 14px;
+  margin-top: 12px;
+  opacity: .9;
 }
 </style>
 </head>
 
 <body>
 
-<!-- 1画面目：メニュー -->
 <section id="menu" class="screen active">
   <div class="title">モード選択</div>
-  <button class="menu-btn" onclick="goSetting('lottery')">当たり/はずれ</button>
-  <button class="menu-btn" onclick="goSetting('number')">番号割り振り</button>
+  <button class="menu-btn" onclick="goSetting('lottery')">当たり/はずれモード</button>
+  <button class="menu-btn" onclick="goSetting('number')">番号割り振りモード</button>
 </section>
 
-<!-- 2画面目：設定 -->
 <section id="setting" class="screen">
   <div class="title" id="settingTitle">設定</div>
 
@@ -160,9 +170,14 @@ input {
     <label>母数</label>
     <input id="totalInput" type="number" value="525" min="1">
 
-    <div id="winSetting">
+    <div id="lotterySetting">
       <label>当たり人数</label>
       <input id="winInput" type="number" value="100" min="1">
+    </div>
+
+    <div id="numberSetting" style="display:none;">
+      <label>割り振り番号総数</label>
+      <input id="numberPoolInput" type="number" value="360" min="1">
     </div>
   </div>
 
@@ -170,7 +185,6 @@ input {
   <button class="back" onclick="showScreen('menu')">戻る</button>
 </section>
 
-<!-- 3画面目：結果 -->
 <section id="resultScreen" class="screen">
   <div class="result-panel">
     <div id="resultText" class="result-text">？？？</div>
@@ -179,6 +193,7 @@ input {
   <div class="count">/<span id="totalText">525</span><small>人中</small></div>
 
   <button class="bottom-btn" onclick="showScreen('menu')">あなたは？</button>
+  <div class="note">もう一度設定する場合は「あなたは？」を押してください</div>
 </section>
 
 <script>
@@ -196,8 +211,11 @@ function goSetting(mode) {
   document.getElementById("settingTitle").textContent =
     mode === "lottery" ? "当たり/はずれ設定" : "番号割り振り設定";
 
-  document.getElementById("winSetting").style.display =
+  document.getElementById("lotterySetting").style.display =
     mode === "lottery" ? "block" : "none";
+
+  document.getElementById("numberSetting").style.display =
+    mode === "number" ? "block" : "none";
 
   showScreen("setting");
 }
@@ -205,11 +223,15 @@ function goSetting(mode) {
 function executeDraw() {
   const total = Number(document.getElementById("totalInput").value);
   const win = Number(document.getElementById("winInput").value);
+  const numberPool = Number(document.getElementById("numberPoolInput").value);
 
   if (!total || total < 1) {
     alert("母数を1以上で入力してください");
     return;
   }
+
+  const resultText = document.getElementById("resultText");
+  resultText.className = "result-text";
 
   if (currentMode === "lottery") {
     if (!win || win < 1 || win > total) {
@@ -218,12 +240,18 @@ function executeDraw() {
     }
 
     const result = Math.floor(Math.random() * total) < win ? "当たり" : "はずれ";
-    document.getElementById("resultText").textContent = result;
+    resultText.textContent = result;
   }
 
   if (currentMode === "number") {
-    const number = Math.floor(Math.random() * total) + 1;
-    document.getElementById("resultText").textContent = number;
+    if (!numberPool || numberPool < 1) {
+      alert("割り振り番号総数を1以上で入力してください");
+      return;
+    }
+
+    const number = Math.floor(Math.random() * numberPool) + 1;
+    resultText.textContent = number;
+    resultText.className = "result-text number";
   }
 
   document.getElementById("totalText").textContent = total;
