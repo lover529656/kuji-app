@@ -1,168 +1,156 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>順番くじ</title>
-  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>くじアプリ</title>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+<style>
+body {
+  margin: 0;
+  background: #f2b45c;
+  font-family: sans-serif;
+  text-align: center;
+}
 
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background:
-        linear-gradient(45deg, rgba(255,255,255,0.12) 25%, transparent 25%),
-        linear-gradient(-45deg, rgba(255,255,255,0.12) 25%, transparent 25%),
-        linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.12) 75%),
-        linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.12) 75%),
-        #f2b45c;
-      background-size: 18px 18px;
-      background-position: 0 0, 0 9px, 9px -9px, -9px 0px;
-      font-family: "Hiragino Maru Gothic ProN", "Yu Gothic", sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
+.container {
+  padding: 20px;
+}
 
-    .app {
-      width: min(92vw, 520px);
-      padding: 22px 14px 28px;
-    }
+.hidden {
+  display: none;
+}
 
-    .result-panel {
-      height: 190px;
-      background: #eee8dc;
-      border: 8px solid rgba(255,255,255,0.85);
-      border-radius: 8px;
-      box-shadow:
-        inset 0 0 0 2px rgba(80,70,55,0.25),
-        0 8px 8px rgba(0,0,0,0.25);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 74px;
-    }
+/* ボタン */
+.btn {
+  width: 80%;
+  margin: 10px auto;
+  padding: 20px;
+  font-size: 22px;
+  border-radius: 12px;
+  background: #eee;
+  border: none;
+}
 
-    .result-text {
-      font-size: 76px;
-      font-weight: 900;
-      color: #ff8c55;
-      letter-spacing: 0.04em;
-      text-shadow:
-        5px 6px 0 rgba(0,0,0,0.28),
-        0 2px 0 rgba(255,255,255,0.3);
-      line-height: 1;
-    }
+/* 入力 */
+input {
+  font-size: 20px;
+  padding: 8px;
+  margin: 5px;
+  width: 120px;
+}
 
-    .count {
-      color: #ffffff;
-      font-size: 60px;
-      font-weight: 900;
-      letter-spacing: 0.02em;
-      text-shadow:
-        4px 5px 0 rgba(0,0,0,0.28),
-        -1px -1px 0 rgba(80,80,80,0.55),
-        1px -1px 0 rgba(80,80,80,0.55),
-        -1px 1px 0 rgba(80,80,80,0.55),
-        1px 1px 0 rgba(80,80,80,0.55);
-      margin-bottom: 72px;
-      white-space: nowrap;
-    }
-
-    .count small {
-      font-size: 32px;
-      margin-left: 8px;
-      font-weight: 700;
-    }
-
-    .button {
-      width: 100%;
-      height: 140px;
-      border: none;
-      border-radius: 30px;
-      background: linear-gradient(#f3eadf, #d3b895);
-      color: #e98755;
-      font-size: 66px;
-      font-weight: 900;
-      letter-spacing: 0.03em;
-      text-shadow:
-        4px 5px 0 rgba(0,0,0,0.24),
-        0 1px 0 rgba(255,255,255,0.4);
-      box-shadow:
-        inset 0 2px 0 rgba(255,255,255,0.65),
-        0 8px 8px rgba(0,0,0,0.18);
-      cursor: pointer;
-    }
-
-    .button:active {
-      transform: translateY(3px);
-      box-shadow:
-        inset 0 2px 0 rgba(255,255,255,0.65),
-        0 4px 5px rgba(0,0,0,0.18);
-    }
-
-    @media (max-width: 430px) {
-      .result-panel {
-        height: 165px;
-        margin-bottom: 62px;
-      }
-
-      .result-text {
-        font-size: 62px;
-      }
-
-      .count {
-        font-size: 50px;
-        margin-bottom: 60px;
-      }
-
-      .count small {
-        font-size: 26px;
-      }
-
-      .button {
-        height: 120px;
-        font-size: 54px;
-      }
-    }
-  </style>
+/* 結果 */
+.result {
+  font-size: 50px;
+  margin: 20px;
+  color: #ff6a3d;
+  font-weight: bold;
+}
+</style>
 </head>
 
 <body>
-  <main class="app">
-    <div class="result-panel">
-      <div id="result" class="result-text">？？？</div>
+
+<div class="container">
+
+  <!-- メニュー -->
+  <div id="menu">
+    <h2>モード選択</h2>
+    <button class="btn" onclick="show('lottery')">当たり/はずれ</button>
+    <button class="btn" onclick="show('number')">番号割り振り</button>
+  </div>
+
+  <!-- 当たり/はずれ -->
+  <div id="lottery" class="hidden">
+    <h2>当たり/はずれ</h2>
+
+    <div>
+      母数<br>
+      <input id="total1" type="number" value="525">
     </div>
 
-    <div class="count">/525<small>人中</small></div>
+    <div>
+      当たり人数<br>
+      <input id="winCount" type="number" value="100">
+    </div>
 
-    <button class="button" onclick="draw()">あなたは？</button>
-  </main>
+    <button class="btn" onclick="drawLottery()">抽選</button>
 
-  <script>
-    const LIFF_ID = "YOUR_LIFF_ID";
+    <div id="lotteryResult" class="result">？</div>
 
-    async function initLiff() {
-      try {
-        await liff.init({ liffId: LIFF_ID });
-        if (!liff.isLoggedIn()) {
-          liff.login();
-        }
-      } catch (e) {
-        console.log("LIFF init error:", e);
-      }
-    }
+    <button onclick="back()">戻る</button>
+  </div>
 
-    function draw() {
-      const result = Math.random() < 0.3 ? "当たり" : "はずれ";
-      document.getElementById("result").textContent = result;
-    }
+  <!-- 番号割り振り -->
+  <div id="number" class="hidden">
+    <h2>番号割り振り</h2>
 
-    initLiff();
-  </script>
+    <div>
+      母数<br>
+      <input id="total2" type="number" value="525">
+    </div>
+
+    <button class="btn" onclick="drawNumber()">番号取得</button>
+
+    <div id="numberResult" class="result">？</div>
+
+    <button onclick="back()">戻る</button>
+  </div>
+
+</div>
+
+<script>
+const LIFF_ID = "YOUR_LIFF_ID";
+
+/* 画面切替 */
+function show(mode) {
+  document.getElementById("menu").classList.add("hidden");
+  document.getElementById(mode).classList.remove("hidden");
+}
+
+function back() {
+  document.getElementById("menu").classList.remove("hidden");
+  document.getElementById("lottery").classList.add("hidden");
+  document.getElementById("number").classList.add("hidden");
+}
+
+/* 抽選 */
+function drawLottery() {
+  const total = Number(document.getElementById("total1").value);
+  const win = Number(document.getElementById("winCount").value);
+
+  const rand = Math.floor(Math.random() * total);
+
+  if (rand < win) {
+    document.getElementById("lotteryResult").innerText = "当たり";
+  } else {
+    document.getElementById("lotteryResult").innerText = "はずれ";
+  }
+}
+
+/* 番号割り振り */
+function drawNumber() {
+  const total = Number(document.getElementById("total2").value);
+
+  const num = Math.floor(Math.random() * total) + 1;
+
+  document.getElementById("numberResult").innerText = num + "番";
+}
+
+/* LIFF */
+async function initLiff() {
+  try {
+    await liff.init({ liffId: LIFF_ID });
+    if (!liff.isLoggedIn()) liff.login();
+  } catch (e) {
+    console.log(e);
+  }
+}
+
+initLiff();
+</script>
+
 </body>
 </html>
